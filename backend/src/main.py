@@ -36,8 +36,9 @@ app.add_middleware(
 
 # Import routes
 try:
-    from src.api.routes import analytics, copilot, reports, threats
+    from src.api.routes import analytics, auth, copilot, reports, threats
 
+    app.include_router(auth.router)
     app.include_router(threats.router)
     app.include_router(copilot.router)
     app.include_router(reports.router)
