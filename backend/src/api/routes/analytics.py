@@ -20,8 +20,8 @@ def get_dashboard_metrics(db: Session = Depends(get_db)):
     total = db.query(Threat).count()
     critical = db.query(Threat).filter(Threat.severity == "critical").count()
     high = db.query(Threat).filter(Threat.severity == "high").count()
-    processed = db.query(ThreatDocument).filter(ThreatDocument.is_processed is True).count()
-    pending = db.query(ThreatDocument).filter(ThreatDocument.is_processed is False).count()
+    processed = db.query(ThreatDocument).filter(ThreatDocument.is_processed == True).count()
+    pending = db.query(ThreatDocument).filter(ThreatDocument.is_processed == False).count()
 
     avg_risk = db.query(func.avg(Threat.risk_score)).scalar() or 0.0
     max_risk = db.query(func.max(Threat.risk_score)).scalar() or 0.0
