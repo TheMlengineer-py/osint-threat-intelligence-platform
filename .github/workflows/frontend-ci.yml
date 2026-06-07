@@ -3,9 +3,12 @@ name: Frontend CI
 
 on:
   push:
+
     paths: [frontend/**]
   pull_request:
     paths: [frontend/**]
+  pull_request:
+ 
 
 env:
   NODE_VERSION: "20"
@@ -38,7 +41,6 @@ jobs:
   test:
     name: Unit Tests
     runs-on: ubuntu-latest
-    needs: lint
     steps:
       - uses: actions/checkout@v4
 
@@ -55,3 +57,37 @@ jobs:
       - name: Run formatter tests
         working-directory: frontend
         run: npx vitest run tests/unit/formatters.test.ts --reporter=verbose
+
+  deploy:
+    name: Deploy to Netlify
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: https://osint-ti-backend.onrender.com
+          VITE_WS_URL: wss://osint-ti-backend.onrender.com
+          VITE_ENVIRONMENT: production
+
+      - name: Deploy to Netlify
+        run: |
+          npm install -g netlify-cli
+          netlify deploy --dir=frontend/dist --prod --message="Deploy from GitHub Actions"
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
