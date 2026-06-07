@@ -12,7 +12,7 @@ services:
       - key: PYTHON_VERSION
         value: "3.11"
       - key: DATABASE_URL
-        value: sqlite:////data/osint.db
+        sync: false  # set manually in Render dashboard
       - key: OLLAMA_HOST
         value: ""           # empty = Ollama disabled; use Groq fallback
       - key: LLM_PROVIDER
