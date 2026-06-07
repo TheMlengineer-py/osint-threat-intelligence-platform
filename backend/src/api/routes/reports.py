@@ -1,3 +1,5 @@
+import contextlib
+
 """
 Intelligence Report Routes
 """
@@ -36,17 +38,13 @@ def generate_report(payload: ReportCreateIn, db: Session = Depends(get_db)):
     high = [t for t in threats if t.severity == "high"]
     by_category: dict = {}
     for t in threats:
-        by_category[t.category or "other"] = (
-            by_category.get(t.category or "other", 0) + 1
-        )
+        by_category[t.category or "other"] = by_category.get(t.category or "other", 0) + 1
 
     # Collect IOCs across all threats
     all_iocs: list[dict] = []
     for t in threats:
-        try:
+        with contextlib.suppress(Exception):
             all_iocs.extend(json.loads(t.iocs or "[]"))
-        except Exception:
-            pass
 
     content = {
         "report_id": report_id,
@@ -88,9 +86,7 @@ def generate_report(payload: ReportCreateIn, db: Session = Depends(get_db)):
     # IOC type breakdown
     for ioc in all_iocs:
         t = ioc.get("type", "unknown")
-        content["ioc_summary"]["by_type"][t] = (
-            content["ioc_summary"]["by_type"].get(t, 0) + 1
-        )
+        content["ioc_summary"]["by_type"][t] = content["ioc_summary"]["by_type"].get(t, 0) + 1
 
     return {
         "id": report_id,
@@ -124,9 +120,7 @@ def quick_report(db: Session = Depends(get_db)):
         "top_20_by_risk": {
             "by_severity": by_sev,
             "by_category": by_cat,
-            "avg_risk": round(
-                sum(t.risk_score or 0 for t in threats) / max(len(threats), 1), 2
-            ),
+            "avg_risk": round(sum(t.risk_score or 0 for t in threats) / max(len(threats), 1), 2),
             "max_risk": max((t.risk_score or 0 for t in threats), default=0),
         },
         "top_threats": [

@@ -6,11 +6,11 @@ Falls back to context-only mode if key not set.
 Fix: suppress groq's internal httpx logging that conflicts with structlog.
 """
 
-from dotenv import load_dotenv
+from dotenv import load_dotenv  # noqa: E402
 
 load_dotenv()
-import logging
-import os
+import logging  # noqa: E402
+import os  # noqa: E402
 
 # ── Suppress groq/httpx internal loggers BEFORE importing groq ───────────────
 # This prevents: Logger._log() got an unexpected keyword argument 'model'
@@ -18,11 +18,11 @@ for noisy_logger in ("groq", "groq._base_client", "httpx", "httpcore"):
     logging.getLogger(noisy_logger).setLevel(logging.WARNING)
     logging.getLogger(noisy_logger).propagate = False
 
-import asyncio
+import asyncio  # noqa: E402
 
-import groq as groq_module
+import groq as groq_module  # noqa: E402
 
-from src.core.logging.logger import logger as app_logger
+from src.core.logging.logger import logger as app_logger  # noqa: E402
 
 
 class GroqClient:
@@ -86,7 +86,9 @@ class GroqClient:
 
         except Exception as exc:
             app_logger.warning(f"Groq error (handled): {type(exc).__name__}")
-            return f"⚠ LLM error — {type(exc).__name__}. Context documents are shown in Sources below."
+            return (
+                f"⚠ LLM error — {type(exc).__name__}. Context documents are shown in Sources below."
+            )
 
     @staticmethod
     def _no_key_message() -> str:

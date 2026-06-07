@@ -26,9 +26,7 @@ class CollectionAgent(BaseAgent):
 
             # Determine collection scope
             task = state.data.get("task", "")
-            keywords = state.data.get(
-                "keywords", ["threat", "malware", "vulnerability"]
-            )
+            keywords = state.data.get("keywords", ["threat", "malware", "vulnerability"])
 
             # Collect from multiple sources
             collected_data = []
@@ -41,9 +39,7 @@ class CollectionAgent(BaseAgent):
             # CISA advisories
             advisories = await self.tools.fetch_cisa_advisories()
             collected_data.extend(advisories)
-            self._add_message(
-                state, "agent", f"Collected {len(advisories)} CISA advisories"
-            )
+            self._add_message(state, "agent", f"Collected {len(advisories)} CISA advisories")
 
             # CVE data
             cves = await self.tools.fetch_cve_data(keywords)
@@ -53,9 +49,7 @@ class CollectionAgent(BaseAgent):
             # Threat feeds
             feeds = await self.tools.fetch_threat_feeds()
             collected_data.extend(feeds)
-            self._add_message(
-                state, "agent", f"Collected {len(feeds)} threat feed items"
-            )
+            self._add_message(state, "agent", f"Collected {len(feeds)} threat feed items")
 
             # Normalize data
             normalized = await self.tools.normalize_data(collected_data)

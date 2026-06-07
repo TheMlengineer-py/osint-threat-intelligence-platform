@@ -32,9 +32,7 @@ def _build_context(threats: list[Threat]) -> str:
         try:
             iocs = json.loads(t.iocs or "[]")
             if iocs:
-                parts = [
-                    ioc.get("type", "") + ":" + ioc.get("value", "") for ioc in iocs[:3]
-                ]
+                parts = [ioc.get("type", "") + ":" + ioc.get("value", "") for ioc in iocs[:3]]
                 iocs_preview = " | IOCs: " + ", ".join(parts)
         except Exception:
             pass
@@ -49,7 +47,7 @@ def _build_context(threats: list[Threat]) -> str:
 
 
 def _filter_threats(db: Session, query: str, limit: int) -> list[Threat]:
-    q = db.query(Threat).filter(Threat.is_active == True)
+    q = db.query(Threat).filter(Threat.is_active is True)
     keyword_filters = {
         "critical": Threat.severity == "critical",
         "high": Threat.severity == "high",
@@ -83,10 +81,7 @@ async def ask_copilot(request: CopilotRequest, db: Session = Depends(get_db)):
     messages.append(
         {
             "role": "user",
-            "content": "THREAT CONTEXT:\n"
-            + context_text
-            + "\n\nQUESTION: "
-            + request.query,
+            "content": "THREAT CONTEXT:\n" + context_text + "\n\nQUESTION: " + request.query,
         }
     )
 

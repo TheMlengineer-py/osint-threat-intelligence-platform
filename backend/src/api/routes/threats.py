@@ -38,14 +38,10 @@ async def get_threat_stats(db: Session = Depends(get_db)):
     return {
         "total": db.query(Threat).count(),
         "by_severity": dict(
-            db.query(Threat.severity, func.count(Threat.id))
-            .group_by(Threat.severity)
-            .all()
+            db.query(Threat.severity, func.count(Threat.id)).group_by(Threat.severity).all()
         ),
         "by_category": dict(
-            db.query(Threat.category, func.count(Threat.id))
-            .group_by(Threat.category)
-            .all()
+            db.query(Threat.category, func.count(Threat.id)).group_by(Threat.category).all()
         ),
         "by_source": dict(
             db.query(Threat.source, func.count(Threat.id)).group_by(Threat.source).all()
@@ -110,7 +106,7 @@ async def ingest_newsapi(db: Session = Depends(get_db)):
 
 
 # ── NLP Processing endpoints (Stage 4) ────────────────────────────────────────
-from src.services.nlp_service import NLPService
+from src.services.nlp_service import NLPService  # noqa: E402
 
 
 @router.post("/process")
@@ -135,9 +131,7 @@ def processed_stats(db: Session = Depends(get_db)):
     from src.models.orm.threat import ThreatDocument
 
     total = db.query(ThreatDocument).count()
-    processed = (
-        db.query(ThreatDocument).filter(ThreatDocument.is_processed == True).count()
-    )
+    processed = db.query(ThreatDocument).filter(ThreatDocument.is_processed is True).count()
     pending = total - processed
     return {
         "total_documents": total,

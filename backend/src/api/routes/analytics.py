@@ -20,12 +20,8 @@ def get_dashboard_metrics(db: Session = Depends(get_db)):
     total = db.query(Threat).count()
     critical = db.query(Threat).filter(Threat.severity == "critical").count()
     high = db.query(Threat).filter(Threat.severity == "high").count()
-    processed = (
-        db.query(ThreatDocument).filter(ThreatDocument.is_processed == True).count()
-    )
-    pending = (
-        db.query(ThreatDocument).filter(ThreatDocument.is_processed == False).count()
-    )
+    processed = db.query(ThreatDocument).filter(ThreatDocument.is_processed is True).count()
+    pending = db.query(ThreatDocument).filter(ThreatDocument.is_processed is False).count()
 
     avg_risk = db.query(func.avg(Threat.risk_score)).scalar() or 0.0
     max_risk = db.query(func.max(Threat.risk_score)).scalar() or 0.0
@@ -94,7 +90,7 @@ def get_threat_trends(
 @router.get("/risk-distribution")
 def get_risk_distribution(db: Session = Depends(get_db)):
     """Risk score histogram buckets."""
-    threats = db.query(Threat.risk_score).filter(Threat.risk_score != None).all()
+    threats = db.query(Threat.risk_score).filter(Threat.risk_score is not None).all()
     scores = [float(r[0]) for r in threats if r[0] is not None]
 
     buckets = {"0-2": 0, "2-4": 0, "4-6": 0, "6-8": 0, "8-10": 0}
