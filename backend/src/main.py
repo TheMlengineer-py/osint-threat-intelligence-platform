@@ -11,6 +11,11 @@ from fastapi.middleware.cors import CORSMiddleware
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+from src.database.engine import engine, Base
+import src.models.orm.threat  # register all ORM models with Base
+
+Base.metadata.create_all(bind=engine)
+
 app = FastAPI(
     title="OSINT Threat Intelligence Platform",
     description="AI-driven OSINT threat monitoring and risk assessment",
