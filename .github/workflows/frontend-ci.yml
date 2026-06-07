@@ -1,4 +1,4 @@
-#frontend pipeline
+##frontend pipeline
 name: Frontend CI
 
 on:
