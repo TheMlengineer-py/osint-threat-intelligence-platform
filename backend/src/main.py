@@ -18,7 +18,8 @@ app = FastAPI(
 )
 
 # CORS — allow Netlify frontend and local dev
-allowed_origins = [
+_cors_env = os.getenv("CORS_ORIGINS", "")
+allowed_origins = [o.strip() for o in _cors_env.split(",") if o.strip()] or [
     "https://osint-threat-intelligence-platform.netlify.app",
     "http://localhost:5173",
     "http://localhost:3000",
@@ -27,7 +28,7 @@ allowed_origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

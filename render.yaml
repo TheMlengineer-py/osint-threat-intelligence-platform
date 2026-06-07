@@ -12,7 +12,7 @@ services:
       - key: PYTHON_VERSION
         value: "3.11"
       - key: DATABASE_URL
-        value: sqlite:///./osint.db
+        value: sqlite:////data/osint.db
       - key: OLLAMA_HOST
         value: ""           # empty = Ollama disabled; use Groq fallback
       - key: LLM_PROVIDER
@@ -20,7 +20,7 @@ services:
       - key: GROQ_API_KEY
         sync: false         # set manually in Render dashboard
       - key: CORS_ORIGINS
-        value: "https://your-site.netlify.app,http://localhost:5174"
+        value: "https://osint-threat-intelligence-platform.netlify.app,http://localhost:5174"
     disk:
       name: osint-data
       mountPath: /data
