@@ -4,7 +4,13 @@ import logging
 import re
 from typing import Any
 
-import spacy
+try:
+    import spacy
+
+    _SPACY_AVAILABLE = True
+except ImportError:
+    spacy = None  # type: ignore[assignment]
+    _SPACY_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
 
@@ -12,9 +18,7 @@ logger = logging.getLogger(__name__)
 try:
     nlp = spacy.load("en_core_web_sm")
 except OSError:
-    logger.warning(
-        "spaCy model not loaded - install with: python -m spacy download en_core_web_sm"
-    )
+    logger.warning("spaCy model not loaded - install with: python -m spacy download en_core_web_sm")
     nlp = None
 
 
