@@ -2,15 +2,11 @@
 OSINT Threat Intelligence Platform — FastAPI Application
 """
 
-from dotenv import load_dotenv
-
-load_dotenv()
+import os
 import logging
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-from src.api.routes import analytics, copilot, reports, threats
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -21,22 +17,36 @@ app = FastAPI(
     version="1.0.0",
 )
 
+# CORS — allow Netlify frontend and local dev
+allowed_origins = [
+    "https://osint-threat-intelligence-platform.netlify.app",
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "http://localhost:5174",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ── Routers ───────────────────────────────────────────────────────────────────
-app.include_router(threats.router)
-app.include_router(copilot.router)
-app.include_router(reports.router)
-app.include_router(analytics.router)
+# Import routes
+try:
+    from src.api.routes import analytics, copilot, reports, threats
+
+    app.include_router(threats.router)
+    app.include_router(copilot.router)
+    app.include_router(reports.router)
+    app.include_router(analytics.router)
+    logger.info("All routers loaded successfully")
+except Exception as e:
+    logger.error(f"Failed to load routers: {e}")
+    raise
 
 
-# ── Health / root ─────────────────────────────────────────────────────────────
 @app.get("/health", tags=["system"])
 def health_check():
     return {"status": "ok", "version": "1.0.0"}
