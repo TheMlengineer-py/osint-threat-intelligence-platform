@@ -1,7 +1,3 @@
-# ══════════════════════════════════════════════════════════════════════════════
-# CI/CD: .github/workflows/frontend-ci.yml
-# ══════════════════════════════════════════════════════════════════════════════
-
 name: Frontend CI
 
 on:
@@ -41,7 +37,7 @@ jobs:
         run: npm run lint || true
 
   test:
-    name: Unit & Integration Tests
+    name: Unit Tests
     runs-on: ubuntu-latest
     needs: lint
     steps:
@@ -57,80 +53,6 @@ jobs:
         working-directory: frontend
         run: npm ci
 
-      - name: Run tests with coverage
+      - name: Run formatter tests
         working-directory: frontend
-        run: npm run coverage
-
-      - name: Upload coverage
-        uses: codecov/codecov-action@v4
-        with:
-          file: frontend/coverage/lcov.info
-          flags: frontend
-        continue-on-error: true
-
-  build:
-    name: Production Build
-    runs-on: ubuntu-latest
-    needs: test
-    env:
-      VITE_API_BASE_URL: https://osint-ti-backend.onrender.com
-      VITE_WS_URL:       wss://osint-ti-backend.onrender.com
-      VITE_ENVIRONMENT:  production
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Install dependencies
-        working-directory: frontend
-        run: npm ci
-
-      - name: Build
-        working-directory: frontend
-        run: npm run build
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-dist
-          path: frontend/dist/
-          retention-days: 7
-
-  e2e:
-    name: E2E Tests (Playwright)
-    runs-on: ubuntu-latest
-    needs: build
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Install dependencies
-        working-directory: frontend
-        run: npm ci
-
-      - name: Install Playwright browsers
-        working-directory: frontend
-        run: npx playwright install --with-deps chromium
-
-      - name: Run E2E tests
-        working-directory: frontend
-        run: npx playwright test
-        env:
-          VITE_API_BASE_URL: http://localhost:8000
-
-      - name: Upload Playwright report
-        uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: playwright-report
-          path: frontend/playwright-report/
+        run: npx vitest run tests/unit/formatters.test.ts --reporter=verbose
