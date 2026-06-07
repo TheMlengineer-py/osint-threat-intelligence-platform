@@ -1,10 +1,18 @@
 """
 ChromaDB retriever — manages the vector collection and semantic search.
 Upsert new threat documents and retrieve top-K similar ones for RAG.
+Falls back gracefully when ChromaDB is not installed.
 """
 
-import chromadb
-from chromadb.config import Settings as ChromaSettings
+try:
+    import chromadb
+    from chromadb.config import Settings as ChromaSettings
+
+    _CHROMADB_AVAILABLE = True
+except ImportError:
+    chromadb = None  # type: ignore[assignment]
+    ChromaSettings = None  # type: ignore[assignment,misc]
+    _CHROMADB_AVAILABLE = False
 
 from src.core.config.settings import settings
 from src.core.logging.logger import logger
@@ -15,10 +23,12 @@ class Retriever:
     """ChromaDB-backed semantic search over ingested OSINT documents."""
 
     def __init__(self):
-        self._client: chromadb.HttpClient | None = None
+        self._client = None
         self._collection = None
 
-    def _get_client(self) -> chromadb.HttpClient:
+    def _get_client(self):
+        if not _CHROMADB_AVAILABLE:
+            raise RuntimeError("ChromaDB not available in this environment")
         if self._client is None:
             self._client = chromadb.HttpClient(
                 host=settings.chroma_host,
@@ -48,18 +58,13 @@ class Retriever:
         col.upsert(
             ids=[doc_id],
             embeddings=[vec],
-            documents=[text[:10_000]],  # ChromaDB per-doc limit
+            documents=[text[:10_000]],
             metadatas=[metadata or {}],
         )
         return doc_id
 
     def upsert_batch(self, docs: list[dict]) -> list[str]:
-        """
-        Batch upsert.
-
-        Args:
-            docs: List of {"id": str, "text": str, "metadata": dict}.
-        """
+        """Batch upsert. Args: docs: List of {"id", "text", "metadata"}."""
         col = self._get_collection()
         ids = [d["id"] for d in docs]
         texts = [d["text"][:10_000] for d in docs]
@@ -74,17 +79,13 @@ class Retriever:
         n_results: int = 10,
         where: dict | None = None,
     ) -> list[dict]:
-        """
-        Semantic search — returns top-K results sorted by cosine similarity.
-
-        Returns:
-            List of {"id", "text", "metadata", "similarity"}.
-        """
+        """Semantic search — returns top-K results sorted by cosine similarity."""
+        if not _CHROMADB_AVAILABLE:
+            return []
         col = self._get_collection()
         count = col.count()
         if count == 0:
             return []
-
         kwargs: dict = {
             "query_embeddings": [embedder.embed(query)],
             "n_results": min(n_results, count),
@@ -92,7 +93,6 @@ class Retriever:
         }
         if where:
             kwargs["where"] = where
-
         res = col.query(**kwargs)
         output: list[dict] = []
         if res["ids"]:
@@ -109,6 +109,8 @@ class Retriever:
         return output
 
     def stats(self) -> dict:
+        if not _CHROMADB_AVAILABLE:
+            return {"collection": settings.chroma_collection, "count": 0}
         try:
             return {
                 "collection": settings.chroma_collection,
