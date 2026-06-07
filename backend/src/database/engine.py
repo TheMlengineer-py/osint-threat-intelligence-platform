@@ -10,6 +10,11 @@ from sqlalchemy.pool import StaticPool
 
 # Get database URL from environment
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./osint.db")
+# Strip async drivers — this module uses sync SQLAlchemy only
+DATABASE_URL = DATABASE_URL.replace("sqlite+aiosqlite://", "sqlite://")
+DATABASE_URL = DATABASE_URL.replace("postgresql+asyncpg://", "postgresql://")
+DATABASE_URL = DATABASE_URL.replace("postgres+asyncpg://", "postgresql://")
+DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://")
 
 # Check if using SQLite or PostgreSQL
 is_sqlite = DATABASE_URL.startswith("sqlite")
