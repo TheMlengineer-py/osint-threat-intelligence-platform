@@ -3,10 +3,8 @@ name: Frontend CI
 
 on:
   push:
-    branches: [main, develop]
     paths: [frontend/**]
   pull_request:
-    branches: [main]
     paths: [frontend/**]
 
 env:
