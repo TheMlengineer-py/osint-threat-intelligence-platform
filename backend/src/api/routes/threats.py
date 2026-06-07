@@ -106,7 +106,10 @@ async def ingest_newsapi(db: Session = Depends(get_db)):
 
 
 # ── NLP Processing endpoints (Stage 4) ────────────────────────────────────────
-from src.services.nlp_service import NLPService  # noqa: E402
+try:
+    from src.services.nlp_service import NLPService
+except ImportError:
+    NLPService = None  # type: ignore[assignment,misc]
 
 
 @router.post("/process")
