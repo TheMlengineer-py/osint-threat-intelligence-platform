@@ -1,0 +1,1 @@
+"""Collection agent module."""

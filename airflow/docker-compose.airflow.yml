@@ -1,0 +1,49 @@
+version: "3.9"
+
+x-airflow-env: &airflow-env
+  AIRFLOW__CORE__EXECUTOR: LocalExecutor
+  AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-db/airflow
+  AIRFLOW__CORE__FERNET_KEY: "46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLt0nfd5nA="
+  AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+  AIRFLOW__WEBSERVER__SECRET_KEY: "osint-airflow-secret"
+  AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "true"
+  _AIRFLOW_WWW_USER_CREATE: "true"
+  _AIRFLOW_WWW_USER_USERNAME: admin
+  _AIRFLOW_WWW_USER_PASSWORD: osint123
+
+services:
+  airflow-db:
+    image: postgres:15-alpine
+    environment: { POSTGRES_USER: airflow, POSTGRES_PASSWORD: airflow, POSTGRES_DB: airflow }
+    volumes: [airflow_pg:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 5s; timeout: 5s; retries: 5
+
+  airflow-init:
+    image: apache/airflow:2.9.0
+    environment: *airflow-env
+    depends_on: { airflow-db: { condition: service_healthy } }
+    command: db migrate
+    volumes: [./dags:/opt/airflow/dags]
+
+  airflow-webserver:
+    image: apache/airflow:2.9.0
+    environment: *airflow-env
+    ports: ["8080:8080"]
+    depends_on: { airflow-db: { condition: service_healthy } }
+    volumes: [./dags:/opt/airflow/dags, ./logs:/opt/airflow/logs]
+    command: webserver
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s; retries: 5
+
+  airflow-scheduler:
+    image: apache/airflow:2.9.0
+    environment: *airflow-env
+    depends_on: { airflow-db: { condition: service_healthy } }
+    volumes: [./dags:/opt/airflow/dags, ./logs:/opt/airflow/logs]
+    command: scheduler
+
+volumes:
+  airflow_pg:

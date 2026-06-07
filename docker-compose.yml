@@ -1,0 +1,116 @@
+version: '3.8'
+
+services:
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: osint-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    networks:
+      - osint-network
+    volumes:
+      - ./frontend/src:/app/src
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: osint-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://osint_user:osint_password@postgres:5432/osint_db
+      - CHROMADB_HOST=chromadb
+      - CHROMADB_PORT=8000
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - JWT_SECRET=${JWT_SECRET:-your-secret-key-change-in-production}
+      - ENVIRONMENT=development
+    depends_on:
+      postgres:
+        condition: service_healthy
+      chromadb:
+        condition: service_started
+      ollama:
+        condition: service_started
+    networks:
+      - osint-network
+    volumes:
+      - ./backend/src:/app/src
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: osint-postgres
+    environment:
+      - POSTGRES_USER=osint_user
+      - POSTGRES_PASSWORD=osint_password
+      - POSTGRES_DB=osint_db
+    ports:
+      - "5432:5432"
+    networks:
+      - osint-network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U osint_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ChromaDB Vector Store
+  chromadb:
+    image: ghcr.io/chroma-core/chroma:latest
+    container_name: osint-chromadb
+    ports:
+      - "8001:8000"
+    networks:
+      - osint-network
+    volumes:
+      - chromadb_data:/chroma/data
+    environment:
+      - ANONYMIZED_TELEMETRY=False
+
+  # Ollama LLM
+  ollama:
+    image: ollama/ollama:latest
+    container_name: osint-ollama
+    ports:
+      - "11434:11434"
+    networks:
+      - osint-network
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0:11434
+
+  # pgAdmin (optional - for database management)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: osint-pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@osint.local
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    ports:
+      - "5050:80"
+    networks:
+      - osint-network
+    depends_on:
+      - postgres
+
+networks:
+  osint-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  chromadb_data:
+  ollama_data:
