@@ -1,0 +1,27 @@
+services:
+  # ── Backend (FastAPI) ───────────────────────────────────────────────────────
+  - type: web
+    name: osint-ti-backend
+    runtime: python
+    region: oregon
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn src.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"
+      - key: DATABASE_URL
+        value: sqlite:///./osint.db
+      - key: OLLAMA_HOST
+        value: ""           # empty = Ollama disabled; use Groq fallback
+      - key: LLM_PROVIDER
+        value: groq         # groq | ollama | none
+      - key: GROQ_API_KEY
+        sync: false         # set manually in Render dashboard
+      - key: CORS_ORIGINS
+        value: "https://your-site.netlify.app,http://localhost:5174"
+    disk:
+      name: osint-data
+      mountPath: /data
+      sizeGB: 1

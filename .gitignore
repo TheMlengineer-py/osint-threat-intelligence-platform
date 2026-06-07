@@ -1,0 +1,80 @@
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.venv/
+venv/
+env/
+.python-version
+
+# ── Environment files — NEVER commit API keys ─────────────────────────────────
+.env
+.env.*
+!.env.example
+!.env.production.example
+backend/.env
+frontend/.env
+frontend/.env.local
+frontend/.env.production
+
+# ── Database files ────────────────────────────────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+backend/osint.db
+
+# ── ML model cache ────────────────────────────────────────────────────────────
+*.bin
+*.pt
+*.onnx
+*.safetensors
+.cache/
+backend/.cache/
+huggingface/
+
+# ── Node / Frontend ───────────────────────────────────────────────────────────
+node_modules/
+frontend/dist/
+frontend/.parcel-cache/
+*.tsbuildinfo
+
+# ── Testing / Coverage ────────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+*.lcov
+frontend/test-results/
+frontend/playwright-report/
+
+# ── IDE ───────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ── Docker ────────────────────────────────────────────────────────────────────
+.dockerignore
+
+# ── Airflow ───────────────────────────────────────────────────────────────────
+airflow/logs/
+airflow/__pycache__/
+airflow.cfg
+airflow.db
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── Alembic generated ─────────────────────────────────────────────────────────
+backend/alembic/versions/*.py
+!backend/alembic/versions/001_initial_schema.py
