@@ -134,8 +134,8 @@ export default function Settings() {
       <div style={card()}>
         <h3 style={{ color: 'var(--ink-primary)', fontSize: 14, fontWeight: 700, margin: '0 0 4px' }}>System Services</h3>
         <div style={{ borderTop: '1px solid var(--bg-border)', marginTop: 12 }}>
-          <Row label="API Backend"     value={isProd ? 'Render Web Service' : 'http://localhost:8000'}      status={backendOk === true ? 'ok' : backendOk === false ? 'error' : 'warn'} />
-          <Row label="Database"        value="SQLite"                                                        status="ok" />
+          <Row label="API Backend"     value={import.meta.env.VITE_API_URL ?? 'Render Web Service'}         status={backendOk === true ? 'ok' : backendOk === false ? 'error' : 'warn'} />
+          <Row label="Database"        value="PostgreSQL (Render managed)"                                   status="ok" />
           <Row label="NLP Pipeline"    value="spaCy en_core_web_sm"                                         status="ok" />
           <Row label="Vector Store"    value="ChromaDB"                                                     status="warn" note="Resets on restart — persistence requires Qdrant Cloud" />
           <Row label="Redis Cache"     value="Not configured"                                               status="inactive" />
