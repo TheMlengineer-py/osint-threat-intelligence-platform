@@ -231,8 +231,8 @@ export default function Copilot() {
         </div>
         <p style={{ color: 'var(--ink-muted)', fontSize: 10, marginTop: 8, textAlign: 'center' }}>
           {groqReady
-            ? `Connected to Groq · ${status?.model} · ${import.meta.env.VITE_API_BASE_URL ?? 'localhost:8000'}`
-            : `Context-only mode · ${import.meta.env.VITE_API_BASE_URL ?? 'localhost:8000'} · Add GROQ_API_KEY to enable LLM`
+            ? `Connected to Groq · ${status?.model}`
+            : `Context-only mode · Add GROQ_API_KEY to enable LLM`
           }
         </p>
       </div>
