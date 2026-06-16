@@ -80,3 +80,20 @@ backend/alembic/versions/*.py
 !backend/alembic/versions/001_initial_schema.py
 frontend/.vite/
 fix_dashboard_ts.sh
+
+# ── One-off fix & stage scripts (not required for app to function) ──
+apply_fixes.sh
+fix_dashboard_ts.sh
+scripts/audit_sh_files.sh
+scripts/groq_fix.sh
+scripts/inspect_stage4.sh
+scripts/remove_emojis.py
+scripts/stage3_fix.sh
+scripts/stage4_fix.sh
+scripts/stage5_fix.sh
+scripts/stage6_fix.sh
+scripts/test_stage3.sh
+scripts/test_stage4.sh
+scripts/test_stage5.sh
+scripts/test_stage6.sh
+scripts/verify_airflow.sh
