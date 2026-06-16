@@ -25,3 +25,105 @@ services:
       name: osint-data
       mountPath: /data
       sizeGB: 1
+
+# ── Cron Jobs ─────────────────────────────────────────────────────────────────
+cronJobs:
+  # 1. Ingest CISA KEV feed — 06:00 UTC daily
+  - name: osint-ingest-cisa
+    runtime: image
+    image:
+      url: curlimages/curl:latest
+    region: oregon
+    schedule: "0 6 * * *"
+    command: >
+      curl -sf -X POST
+      https://osint-threat-intelligence-platform-82p9.onrender.com/api/v1/threats/ingest/cisa
+
+  # 2. Ingest RSS/news feeds — 06:10 UTC daily (after CISA completes)
+  - name: osint-ingest-rss
+    runtime: image
+    image:
+      url: curlimages/curl:latest
+    region: oregon
+    schedule: "10 6 * * *"
+    command: >
+      curl -sf -X POST
+      https://osint-threat-intelligence-platform-82p9.onrender.com/api/v1/threats/ingest/rss
+
+  # 3. Run NLP processing — 06:20 UTC daily (after ingestion completes)
+  - name: osint-nlp-process
+    runtime: image
+    image:
+      url: curlimages/curl:latest
+    region: oregon
+    schedule: "20 6 * * *"
+    command: >
+      curl -sf -X POST
+      https://osint-threat-intelligence-platform-82p9.onrender.com/api/v1/threats/process
+
+  # 4. Hourly CISA monitor — every hour
+  - name: osint-hourly-monitor
+    runtime: image
+    image:
+      url: curlimages/curl:latest
+    region: oregon
+    schedule: "0 * * * *"
+    command: >
+      curl -sf -X POST
+      https://osint-threat-intelligence-platform-82p9.onrender.com/api/v1/threats/ingest/cisa
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#services:
+#  # ── Backend (FastAPI) ───────────────────────────────────────────────────────
+#  - type: web
+#    name: osint-ti-backend
+#    runtime: python
+#    region: oregon
+#    plan: free
+#    rootDir: backend
+#    buildCommand: pip install -r requirements.txt
+#    startCommand: uvicorn src.main:app --host 0.0.0.0 --port $PORT
+#    envVars:
+#      - key: PYTHON_VERSION
+#        value: "3.11"
+#      - key: DATABASE_URL
+#        sync: false  # set manually in Render dashboard
+#      - key: OLLAMA_HOST
+#        value: ""           # empty = Ollama disabled; use Groq fallback
+#      - key: LLM_PROVIDER
+#        value: groq         # groq | ollama | none
+#      - key: GROQ_API_KEY
+#        sync: false         # set manually in Render dashboard
+#      - key: CORS_ORIGINS
+#        value: "https://osint-threat-intelligence-platform.netlify.app,http://localhost:5174"
+#    disk:
+#      name: osint-data
+#      mountPath: /data
+#      sizeGB: 1
