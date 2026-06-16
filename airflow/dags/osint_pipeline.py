@@ -29,7 +29,7 @@ from airflow.utils.trigger_rule import TriggerRule
 log = logging.getLogger(__name__)
 
 # ── Config ────────────────────────────────────────────────────────────────────
-BACKEND_URL = "http://localhost:8000/api/v1"
+BACKEND_URL = "https://osint-threat-intelligence-platform-82p9.onrender.com/api/v1"
 TIMEOUT = 60  # seconds per request
 
 DEFAULT_ARGS = {

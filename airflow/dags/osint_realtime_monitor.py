@@ -12,7 +12,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 
 log = logging.getLogger(__name__)
-BACKEND_URL = "http://localhost:8000/api/v1"
+BACKEND_URL = "https://osint-threat-intelligence-platform-82p9.onrender.com/api/v1"
 
 DEFAULT_ARGS = {
     "owner": "osint-platform",
