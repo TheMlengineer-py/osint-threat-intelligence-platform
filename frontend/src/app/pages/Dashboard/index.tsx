@@ -130,10 +130,7 @@ export default function Dashboard() {
               OSINT threat source geolocation — hover for details
             </p>
           </div>
-          <div style={{ display: 'flex', gap: 16, fontSize: 11, color: 'var(--ink-muted)' }}>
-            <span>Total hotspots: <strong style={{ color: 'var(--cyan)' }}>{HOTSPOTS.length}</strong></span>
-            <span>Most active: <strong style={{ color: '#ef4444' }}>Europe ({HOTSPOTS.find(h=>h.name==='Europe')?.count})</strong></span>
-          </div>
+
         </div>
         <WorldThreatMap bySource={m?.by_source} />
       </div>
