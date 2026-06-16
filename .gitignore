@@ -79,3 +79,4 @@ logs/
 backend/alembic/versions/*.py
 !backend/alembic/versions/001_initial_schema.py
 frontend/.vite/
+fix_dashboard_ts.sh

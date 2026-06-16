@@ -10,115 +10,9 @@ import { useTheme } from '@/context/ThemeContext'
 const SEV   = { critical: '#ef4444', high: '#f97316', medium: '#eab308', low: '#22c55e' }
 const CATS  = ['#06b6d4','#f97316','#ef4444','#8b5cf6','#22c55e','#eab308','#ec4899']
 
-// World threat hotspot data (lat/lng mapped to SVG x/y on 1000×500 viewBox)
-const HOTSPOTS = [
-  { name: 'North America',  x: 200, y: 160, count: 18, color: '#ef4444' },
-  { name: 'Europe',         x: 480, y: 140, count: 22, color: '#f97316' },
-  { name: 'East Asia',      x: 730, y: 180, count: 15, color: '#eab308' },
-  { name: 'Russia',         x: 600, y: 110, count: 12, color: '#ef4444' },
-  { name: 'Middle East',    x: 570, y: 210, count: 9,  color: '#f97316' },
-  { name: 'South Asia',     x: 650, y: 230, count: 7,  color: '#eab308' },
-  { name: 'South America',  x: 270, y: 310, count: 5,  color: '#22c55e' },
-  { name: 'Africa',         x: 490, y: 280, count: 4,  color: '#22c55e' },
-  { name: 'SE Asia',        x: 720, y: 260, count: 8,  color: '#eab308' },
-]
 
-// WorldMap moved to components/charts/WorldThreatMap.tsx
-function _DEPRECATED_WorldMap() {
-  const [hovered, setHovered] = React.useState<string | null>(null)
-  return (
-    <div style={{ position: 'relative', width: '100%' }}>
-      <svg viewBox="0 0 1000 480" style={{ width: '100%', display: 'block' }}>
-        {/* Ocean background */}
-        <rect width="1000" height="480" fill="rgba(6,182,212,0.04)" rx="8" />
-        {/* Simplified continent outlines */}
-        {/* North America */}
-        <path d="M120,80 L230,70 L280,120 L260,200 L220,240 L180,220 L150,180 L110,160 Z"
-          fill="rgba(255,255,255,0.06)" stroke="rgba(6,182,212,0.2)" strokeWidth="1" />
-        {/* South America */}
-        <path d="M220,270 L290,260 L310,340 L280,410 L240,420 L210,370 L200,300 Z"
-          fill="rgba(255,255,255,0.06)" stroke="rgba(6,182,212,0.2)" strokeWidth="1" />
-        {/* Europe */}
-        <path d="M430,80 L530,75 L550,130 L510,160 L460,155 L430,130 Z"
-          fill="rgba(255,255,255,0.06)" stroke="rgba(6,182,212,0.2)" strokeWidth="1" />
-        {/* Africa */}
-        <path d="M450,200 L540,195 L560,300 L520,390 L470,385 L440,300 L430,230 Z"
-          fill="rgba(255,255,255,0.06)" stroke="rgba(6,182,212,0.2)" strokeWidth="1" />
-        {/* Russia/Asia */}
-        <path d="M540,60 L820,55 L840,140 L780,180 L700,170 L600,150 L550,120 Z"
-          fill="rgba(255,255,255,0.06)" stroke="rgba(6,182,212,0.2)" strokeWidth="1" />
-        {/* South/SE Asia */}
-        <path d="M600,190 L780,195 L800,260 L750,290 L680,280 L620,250 Z"
-          fill="rgba(255,255,255,0.06)" stroke="rgba(6,182,212,0.2)" strokeWidth="1" />
-        {/* Australia */}
-        <path d="M740,320 L850,315 L870,390 L820,410 L760,400 L730,370 Z"
-          fill="rgba(255,255,255,0.06)" stroke="rgba(6,182,212,0.2)" strokeWidth="1" />
-        {/* Grid lines */}
-        {[200,400,600,800].map(x => (
-          <line key={x} x1={x} y1="0" x2={x} y2="480" stroke="rgba(6,182,212,0.08)" strokeWidth="0.5" />
-        ))}
-        {[120,240,360].map(y => (
-          <line key={y} x1="0" y1={y} x2="1000" y2={y} stroke="rgba(6,182,212,0.08)" strokeWidth="0.5" />
-        ))}
-        {/* Threat hotspots */}
-        {HOTSPOTS.map(h => {
-          const isHov = hovered === h.name
-          const r = Math.max(8, Math.min(24, h.count * 1.2))
-          return (
-            <g key={h.name}
-              onMouseEnter={() => setHovered(h.name)}
-              onMouseLeave={() => setHovered(null)}
-              style={{ cursor: 'pointer' }}>
-              {/* Pulse ring */}
-              <circle cx={h.x} cy={h.y} r={r * 2.2}
-                fill={`${h.color}12`} stroke={`${h.color}30`} strokeWidth="1">
-                <animate attributeName="r" values={`${r * 1.8};${r * 2.6};${r * 1.8}`}
-                  dur="3s" repeatCount="indefinite" />
-                <animate attributeName="opacity" values="0.6;0.2;0.6"
-                  dur="3s" repeatCount="indefinite" />
-              </circle>
-              {/* Core dot */}
-              <circle cx={h.x} cy={h.y} r={isHov ? r * 1.3 : r}
-                fill={h.color} fillOpacity="0.85"
-                stroke="rgba(255,255,255,0.3)" strokeWidth="1.5"
-                style={{ transition: 'r 0.2s' }} />
-              {/* Count label */}
-              <text x={h.x} y={h.y + 4} textAnchor="middle"
-                fontSize={r > 14 ? 10 : 8} fontWeight="700"
-                fill="white" fontFamily="monospace">
-                {h.count}
-              </text>
-              {/* Tooltip on hover */}
-              {isHov && (
-                <g>
-                  <rect x={h.x - 55} y={h.y - r - 36} width="110" height="28" rx="6"
-                    fill="rgba(10,22,40,0.95)" stroke={h.color} strokeWidth="1" />
-                  <text x={h.x} y={h.y - r - 16} textAnchor="middle"
-                    fontSize="11" fill="white" fontFamily="sans-serif">
-                    {h.name}
-                  </text>
-                  <text x={h.x} y={h.y - r - 26} textAnchor="middle"
-                    fontSize="9" fill={h.color} fontFamily="monospace">
-                    {h.count} threats
-                  </text>
-                </g>
-              )}
-            </g>
-          )
-        })}
-        {/* Legend */}
-        <g transform="translate(20, 430)">
-          {[['Critical','#ef4444'],['High','#f97316'],['Medium','#eab308'],['Low','#22c55e']].map(([l,c], i) => (
-            <g key={l} transform={`translate(${i * 120}, 0)`}>
-              <circle cx="6" cy="6" r="5" fill={c} fillOpacity="0.8" />
-              <text x="16" y="10" fontSize="10" fill="rgba(255,255,255,0.5)" fontFamily="sans-serif">{l}</text>
-            </g>
-          ))}
-        </g>
-      </svg>
-    </div>
-  )
-}
+
+
 
 function card(extra: React.CSSProperties = {}): React.CSSProperties {
   return { background: 'var(--bg-card)', border: '1px solid var(--bg-border)', borderRadius: 12, padding: 20, ...extra }
@@ -236,12 +130,9 @@ export default function Dashboard() {
               OSINT threat source geolocation — hover for details
             </p>
           </div>
-          <div style={{ display: 'flex', gap: 16, fontSize: 11, color: 'var(--ink-muted)' }}>
-            <span>Total hotspots: <strong style={{ color: 'var(--cyan)' }}>{HOTSPOTS.length}</strong></span>
-            <span>Most active: <strong style={{ color: '#ef4444' }}>Europe ({HOTSPOTS.find(h=>h.name==='Europe')?.count})</strong></span>
-          </div>
+
         </div>
-        <WorldThreatMap />
+        <WorldThreatMap bySource={m?.by_source} />
       </div>
 
       {/* Trend + Category */}

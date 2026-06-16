@@ -1,8 +1,21 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import { useThreats } from '@/hooks'
 
 const SEV_COLOR: Record<string, string> = {
-  critical: '#ef4444', high: '#f97316', medium: '#eab308', low: '#22c55e'
+  critical: '#ef4444', high: '#f97316', medium: '#eab308', low: '#22c55e',
+}
+
+const LS_KEY = 'osint_read_alert_ids'
+
+function loadReadIds(): Set<string> {
+  try {
+    const raw = localStorage.getItem(LS_KEY)
+    return raw ? new Set(JSON.parse(raw) as string[]) : new Set()
+  } catch { return new Set() }
+}
+
+function saveReadIds(ids: Set<string>) {
+  try { localStorage.setItem(LS_KEY, JSON.stringify([...ids])) } catch { /* ignore */ }
 }
 
 function timeAgo(iso: string) {
@@ -15,22 +28,34 @@ function timeAgo(iso: string) {
 }
 
 export default function Alerts() {
-  const { data = [], isLoading } = useThreats({ limit: 50 } as any)
-  const [readIds, setReadIds] = useState<Set<string>>(new Set())
-  const [filter, setFilter] = useState<'all' | 'unread'>('unread')
+  const { data = [], isLoading } = useThreats({ limit: 100 } as any)
 
-  const threats = (data as any[]).filter(t =>
-    t.severity === 'critical' || t.severity === 'high'
+  // Persist read state across navigation via localStorage
+  const [readIds, setReadIds] = useState<Set<string>>(loadReadIds)
+  const [filter, setFilter]   = useState<'all' | 'unread'>('unread')
+
+  const threats = (data as any[]).filter(
+    t => t.severity === 'critical' || t.severity === 'high'
   )
 
-  const displayed = filter === 'unread'
-    ? threats.filter(t => !readIds.has(t.id))
+  const unreadCount = threats.filter(t => !readIds.has(String(t.id))).length
+  const displayed   = filter === 'unread'
+    ? threats.filter(t => !readIds.has(String(t.id)))
     : threats
 
-  const unreadCount = threats.filter(t => !readIds.has(t.id)).length
+  const markRead = useCallback((id: string) => {
+    setReadIds(prev => {
+      const next = new Set([...prev, id])
+      saveReadIds(next)
+      return next
+    })
+  }, [])
 
-  const markRead = (id: string) => setReadIds(prev => new Set([...prev, id]))
-  const markAllRead = () => setReadIds(new Set(threats.map(t => t.id)))
+  const markAllRead = useCallback(() => {
+    const next = new Set(threats.map(t => String(t.id)))
+    setReadIds(next)
+    saveReadIds(next)
+  }, [threats])
 
   return (
     <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 900 }}>
@@ -42,30 +67,40 @@ export default function Alerts() {
             Real-time notifications for high and critical severity threats
           </p>
         </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
           {unreadCount > 0 && (
             <span style={{ padding: '4px 12px', borderRadius: 20, background: 'rgba(239,68,68,0.15)', color: '#ef4444', fontSize: 12, fontWeight: 700, border: '1px solid rgba(239,68,68,0.3)' }}>
               {unreadCount} unread
             </span>
           )}
           {unreadCount > 0 && (
-            <button onClick={markAllRead} style={{ padding: '6px 14px', borderRadius: 8, background: 'var(--bg-elevated)', border: '1px solid var(--bg-border)', color: 'var(--ink-secondary)', fontSize: 12, cursor: 'pointer' }}>
+            <button
+              onClick={markAllRead}
+              style={{ padding: '6px 14px', borderRadius: 8, background: 'var(--bg-elevated)', border: '1px solid var(--bg-border)', color: 'var(--ink-secondary)', fontSize: 12, cursor: 'pointer' }}
+            >
               Mark all read
             </button>
           )}
           <div style={{ display: 'flex', borderRadius: 8, overflow: 'hidden', border: '1px solid var(--bg-border)' }}>
             {(['unread', 'all'] as const).map(f => (
-              <button key={f} onClick={() => setFilter(f)} style={{
-                padding: '6px 14px', fontSize: 12, fontWeight: 500, cursor: 'pointer', textTransform: 'capitalize',
-                background: filter === f ? 'rgba(6,182,212,0.15)' : 'var(--bg-elevated)',
-                color: filter === f ? 'var(--cyan)' : 'var(--ink-secondary)',
-                border: 'none',
-              }}>{f === 'unread' ? `Unread (${unreadCount})` : `All (${threats.length})`}</button>
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                style={{
+                  padding: '6px 14px', fontSize: 12, fontWeight: 500, cursor: 'pointer',
+                  background: filter === f ? 'rgba(6,182,212,0.15)' : 'var(--bg-elevated)',
+                  color: filter === f ? 'var(--cyan)' : 'var(--ink-secondary)',
+                  border: 'none',
+                }}
+              >
+                {f === 'unread' ? `Unread (${unreadCount})` : `All (${threats.length})`}
+              </button>
             ))}
           </div>
         </div>
       </div>
 
+      {/* Body */}
       {isLoading ? (
         <div style={{ color: 'var(--ink-muted)', padding: 24 }}>Loading alerts…</div>
       ) : displayed.length === 0 ? (
@@ -73,18 +108,21 @@ export default function Alerts() {
           <div style={{ fontSize: 40, marginBottom: 12 }}>✓</div>
           <p style={{ color: 'var(--ink-primary)', fontWeight: 600 }}>All caught up</p>
           <p style={{ color: 'var(--ink-muted)', fontSize: 13, marginTop: 6 }}>
-            {filter === 'unread' ? 'No unread alerts — switch to "All" to see history' : 'No critical or high severity threats detected'}
+            {filter === 'unread'
+              ? 'No unread alerts — switch to "All" to see history'
+              : 'No critical or high severity threats detected'}
           </p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {displayed.map((t: any) => {
-            const isRead = readIds.has(t.id)
-            const col = SEV_COLOR[t.severity] ?? '#64748b'
+            const id    = String(t.id)
+            const isRead = readIds.has(id)
+            const col   = SEV_COLOR[t.severity] ?? '#64748b'
             return (
               <div
-                key={t.id}
-                onClick={() => markRead(t.id)}
+                key={id}
+                onClick={() => markRead(id)}
                 style={{
                   display: 'flex', alignItems: 'flex-start', gap: 14, padding: '14px 18px',
                   borderRadius: 10, cursor: 'pointer', transition: 'all 0.2s',
@@ -117,8 +155,9 @@ export default function Alerts() {
                   <div style={{ color: 'var(--ink-muted)', fontSize: 11 }}>
                     {t.detected_at ? timeAgo(t.detected_at) : '—'}
                   </div>
-                  {isRead && <div style={{ color: '#22c55e', fontSize: 10, marginTop: 2 }}>✓ Read</div>}
-                  {!isRead && <div style={{ color: 'var(--ink-muted)', fontSize: 10, marginTop: 2 }}>click to dismiss</div>}
+                  {isRead
+                    ? <div style={{ color: '#22c55e', fontSize: 10, marginTop: 2 }}>✓ Read</div>
+                    : <div style={{ color: 'var(--ink-muted)', fontSize: 10, marginTop: 2 }}>click to dismiss</div>}
                 </div>
               </div>
             )
