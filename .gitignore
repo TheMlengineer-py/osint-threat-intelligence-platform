@@ -97,3 +97,6 @@ scripts/test_stage4.sh
 scripts/test_stage5.sh
 scripts/test_stage6.sh
 scripts/verify_airflow.sh
+*.backup
+*.bak
+airflow/--dag-id
