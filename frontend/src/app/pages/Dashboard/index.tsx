@@ -132,7 +132,7 @@ export default function Dashboard() {
           </div>
 
         </div>
-        <WorldThreatMap bySource={m?.by_source} />
+        <WorldThreatMap bySource={m?.by_source} totalThreats={m?.total_threats} />
       </div>
 
       {/* Trend + Category */}

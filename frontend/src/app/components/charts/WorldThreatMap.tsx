@@ -47,31 +47,41 @@ const LAND_PATHS = [
 
 interface Props {
   bySource?: Record<string, number>   // analytics.by_source from API
+  totalThreats?: number                // analytics.total_threats -- map is normalised to sum to this
 }
 
-function buildHotspots(bySource?: Record<string, number>) {
-  if (!bySource || Object.keys(bySource).length === 0) {
-    // No real data yet — use base counts
+function buildHotspots(bySource: Record<string, number> | undefined, totalThreats: number | undefined) {
+  if (!bySource || Object.keys(bySource).length === 0 || !totalThreats) {
     return HOTSPOT_DEFS.map(h => ({ ...h, count: h.baseCount }))
   }
 
   const srcLower: Record<string, number> = {}
   Object.entries(bySource).forEach(([k, v]) => { srcLower[k.toLowerCase()] = v })
 
-  return HOTSPOT_DEFS.map(h => {
-    let total = h.baseCount
+  const rawWeights = HOTSPOT_DEFS.map(h => {
+    let w = h.baseCount
     h.sourceKeys.forEach(key => {
       Object.entries(srcLower).forEach(([src, cnt]) => {
-        if (src.includes(key) || key.includes(src)) total += cnt
+        if (src.includes(key) || key.includes(src)) w += cnt
       })
     })
-    return { ...h, count: total }
+    return w
   })
+
+  const sumWeights = rawWeights.reduce((a, b) => a + b, 0)
+
+  const counts = rawWeights.map(w => Math.round((w / sumWeights) * totalThreats))
+
+  const diff = totalThreats - counts.reduce((a, b) => a + b, 0)
+  const maxIdx = counts.indexOf(Math.max(...counts))
+  counts[maxIdx] += diff
+
+  return HOTSPOT_DEFS.map((h, i) => ({ ...h, count: counts[i] }))
 }
 
-export function WorldThreatMap({ bySource }: Props) {
+export function WorldThreatMap({ bySource, totalThreats }: Props) {
   const [hovered, setHovered] = useState<string | null>(null)
-  const hotspots = buildHotspots(bySource)
+  const hotspots = buildHotspots(bySource, totalThreats)
   const top = hotspots.reduce((a, b) => a.count > b.count ? a : b, hotspots[0])
   const isLive = bySource && Object.keys(bySource).length > 0
 
