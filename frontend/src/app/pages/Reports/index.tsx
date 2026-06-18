@@ -39,15 +39,7 @@ export default function Reports() {
           <h1 style={{ color: 'var(--ink-primary)', fontSize: 24, fontWeight: 800, margin: 0 }}>Intelligence Reports</h1>
           <p style={{ color: 'var(--ink-muted)', fontSize: 13, marginTop: 4 }}>Generate and manage threat intelligence reports</p>
         </div>
-        <button onClick={handleGenerate} disabled={genLoading} style={{
-          padding: '9px 20px', borderRadius: 8, background: 'var(--cyan)', border: 'none',
-          color: '#050c18', fontSize: 13, fontWeight: 700, cursor: genLoading ? 'not-allowed' : 'pointer',
-          opacity: genLoading ? 0.7 : 1, display: 'flex', alignItems: 'center', gap: 8,
-        }}>
-          {genLoading
-            ? <><span style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }}>⟳</span> Generating…</>
-            : '+ Generate Report'}
-        </button>
+        {/* BUTTON DISABLED */}
       </div>
 
       {/* Summary cards row */}
