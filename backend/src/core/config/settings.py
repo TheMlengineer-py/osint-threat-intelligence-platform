@@ -44,7 +44,7 @@ class Settings(BaseSettings):
 
     # ── Groq LLM (cloud — replaces Ollama) ───────────────────────────────────
     groq_api_key: str = ""
-    groq_model: str = "llama3-8b-8192"
+    groq_model: str = "openai/gpt-oss-20b"
     llm_provider: str = "groq"  # "groq" | "ollama"
     # ── Embedding ─────────────────────────────────────────────────────────────
     embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"

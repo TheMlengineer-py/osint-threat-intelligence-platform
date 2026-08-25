@@ -100,3 +100,4 @@ scripts/verify_airflow.sh
 *.backup
 *.bak
 airflow/--dag-id
+migrate_model_and_reports.sh

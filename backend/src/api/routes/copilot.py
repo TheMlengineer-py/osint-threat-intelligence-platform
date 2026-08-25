@@ -129,8 +129,8 @@ def list_models():
     return {
         "current": groq_client.model_name,
         "available": [
-            {"id": "llama-3.1-8b-instant", "description": "Fast, great for Q&A"},
-            {"id": "llama3-70b-8192", "description": "Best quality, slower"},
+            {"id": "openai/gpt-oss-20b", "description": "Recommended — fast MoE, tool use, 20B params"},
+            {"id": "llama3-70b-8192",    "description": "Best quality, slower"},
             {"id": "mixtral-8x7b-32768", "description": "Long context 32k tokens"},
         ],
     }
