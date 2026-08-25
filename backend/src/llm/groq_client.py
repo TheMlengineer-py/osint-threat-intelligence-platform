@@ -31,7 +31,7 @@ class GroqClient:
     def __init__(self):
         self._client: groq_module.Groq | None = None
         self._api_key: str = os.getenv("GROQ_API_KEY", "")
-        self._model: str = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
+        self._model: str = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
 
     def _get_client(self) -> groq_module.Groq | None:
         if not self._api_key:

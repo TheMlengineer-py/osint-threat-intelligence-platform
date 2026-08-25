@@ -23,7 +23,7 @@ export default function Copilot() {
   const groqReady    = status?.ollama_available === true
   const contextOnly  = !groqReady
   const providerLabel = groqReady
-    ? `Groq · ${status?.model ?? 'llama3-8b-8192'}`
+    ? `Groq · ${status?.model ?? 'openai/gpt-oss-20b'}`
     : 'Context mode'
 
   useEffect(() => {
@@ -231,7 +231,7 @@ export default function Copilot() {
         </div>
         <p style={{ color: 'var(--ink-muted)', fontSize: 10, marginTop: 8, textAlign: 'center' }}>
           {groqReady
-            ? `Connected to Groq · ${status?.model}`
+            ? `Connected to Groq · ${status?.model ?? 'openai/gpt-oss-20b'}`
             : `Context-only mode · Add GROQ_API_KEY to enable LLM`
           }
         </p>
